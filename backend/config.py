@@ -18,21 +18,11 @@ DB_NAME = os.getenv("DB_NAME")
 GROQ_API_KEY=os.getenv("GROQ_API_KEY")
 GROQ_MODEL=os.getenv("GROQ_MODEL")
 
-# Validate configuration
-required_variables = {
-    "DB_USER": DB_USER,
-    "DB_PASSWORD": DB_PASSWORD,
-    "DB_NAME": DB_NAME,
-    "GROQ_API_KEY":GROQ_API_KEY,
-    "GROQ_MODEL":GROQ_MODEL
-}
+def missing_settings(*names: str) -> list[str]:
+    """Return missing settings when a component is actually used.
 
-missing = [
-    key for key, value in required_variables.items()
-    if not value
-]
-
-if missing:
-    raise ValueError(
-        f"Missing environment variables: {missing}"
-    )
+    Keeping validation lazy means schema/validator tests and Streamlit's
+    startup page can load even before the developer has created `.env`.
+    """
+    settings = globals()
+    return [name for name in names if not settings.get(name)]

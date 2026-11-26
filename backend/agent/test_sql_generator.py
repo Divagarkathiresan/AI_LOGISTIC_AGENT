@@ -9,7 +9,7 @@ def main():
 
         "Find all delayed shipments",
 
-        "Show shipments handled by Suresh",
+        "Show shipments handled by Lemon",
 
         "Find the total number of shipments",
 

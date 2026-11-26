@@ -5,3 +5,6 @@ streamlit
 langchain
 langchain-community
 langchain-groq
+langchain-core
+sqlglot
+werkzeug
