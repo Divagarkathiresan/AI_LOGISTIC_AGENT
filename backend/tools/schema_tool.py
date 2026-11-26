@@ -7,6 +7,8 @@ from backend.database.schema import format_schema_for_llm
 @tool
 def get_database_schema() -> str:
     """
+    Docs String
+    
     Discover the logistics database schema.
 
     Returns all available table names, columns,

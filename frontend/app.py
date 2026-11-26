@@ -48,6 +48,22 @@ def render_message(role: str, content: str) -> None:
             st.markdown(content)
 
 
+def render_query_result(message: dict) -> None:
+    """Render persisted SQL and rows for an assistant chat message."""
+    if message.get("sql"):
+        with st.expander("Generated SQL", expanded=False):
+            st.code(message["sql"], language="sql")
+
+    if message.get("query_succeeded"):
+        with st.expander("", expanded=True):
+            data = message.get("data", [])
+            if data:
+                st.caption(f"{len(data)} row(s) returned")
+                st.dataframe(data, use_container_width=True)
+            else:
+                st.info("The query completed but returned no records.")
+
+
 # --------------------------------------------------
 # SESSION MANAGEMENT
 # --------------------------------------------------
@@ -94,9 +110,7 @@ with st.sidebar:
     st.subheader("About")
 
     st.write(
-        "This application converts natural-language "
-        "questions into SQL queries and retrieves "
-        "information from the Logistics MySQL database."
+        ""
     )
 
 
@@ -106,6 +120,8 @@ with st.sidebar:
 
 for message in st.session_state.messages:
     render_message(message["role"], message["content"])
+    if message["role"] == "assistant":
+        render_query_result(message)
 
 
 # --------------------------------------------------
@@ -144,12 +160,14 @@ if user_question:
 
             render_message("assistant", answer)
 
-            # Save only the conversational answer. SQL and raw database rows
-            # stay in the backend and are deliberately not rendered.
-            st.session_state.messages.append({
+            assistant_message = {
                 "role": "assistant",
                 "content": answer,
-            })
+                "data": response.get("data", []),
+                "query_succeeded": response.get("query_succeeded", False),
+            }
+            render_query_result(assistant_message)
+            st.session_state.messages.append(assistant_message)
 
         except Exception:
             st.error(

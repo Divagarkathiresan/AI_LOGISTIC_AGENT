@@ -4,9 +4,10 @@ from collections import defaultdict
 
 class ConversationMemory:
 
-    def __init__(self, max_messages=10):
+    def __init__(self, max_chat_turns=3):
         self.conversations = defaultdict(list)
-        self.max_messages = max_messages
+        # One chat turn contains a user message and the assistant reply.
+        self.max_messages = max_chat_turns * 2
 
     def add_message(self, session_id, role, content):
 
@@ -15,7 +16,7 @@ class ConversationMemory:
             "content": content
         })
 
-        # Keep only the latest messages.
+        # Retain only the last three user/assistant chat exchanges, rather than the complete session history.
         self.conversations[session_id] = (
             self.conversations[session_id][-self.max_messages:]
         )
