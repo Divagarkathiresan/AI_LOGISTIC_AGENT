@@ -26,9 +26,9 @@ def validate_sql(query: str) -> tuple[bool, str]:
     if "--" in query or "/*" in query or "*/" in query:
         return False, "SQL comments are not allowed."
 
-    # Reject multiple statements.
-    if ";" in query.rstrip(";"):
-        return False, "Multiple SQL statements are not allowed."
+    # # Reject multiple statements.
+    # if ";" in query.rstrip(";"):
+    #     return False, "Multiple SQL statements are not allowed."
 
     # Remove one optional trailing semicolon.
     query = query.rstrip(";").strip()

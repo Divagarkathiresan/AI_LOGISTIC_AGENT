@@ -62,9 +62,6 @@ def run_sql_agent(question: str, session_id: str = "default"):
     history = conversation_memory.get_history(session_id)
     messages = []
 
-    # Replay the session as proper chat turns. Supplying the history as one
-    # text blob makes it easy for a model to overlook facts such as “I am
-    # Divagar”; role-specific messages preserve the conversational meaning.
     for message in history:
         if message["role"] == "user":
             messages.append(HumanMessage(content=message["content"]))
@@ -73,8 +70,7 @@ def run_sql_agent(question: str, session_id: str = "default"):
 
     messages.append(HumanMessage(content=question))
 
-    # LLM setup and execution can both fail because of configuration or
-    # provider errors, so handle them through the same safe response path.
+    # LLM setup and execution
     try:
         llm = get_llm()
         input_allowed, _ = classify_input(llm, question, history)
@@ -92,7 +88,7 @@ def run_sql_agent(question: str, session_id: str = "default"):
             }
             _add_display_fields(result)
             save_conversation(session_id, question, answer)
-            
+
             return result
         
         agent = create_logistics_agent(llm)
@@ -162,7 +158,9 @@ def _extract_tool_activity(messages):
     tool_results_by_name = defaultdict(list)
     for message in messages:
         if isinstance(message, ToolMessage):
-            tool_result = _parse_tool_result(message.content)
+            tool_result = getattr(message, "artifact", None)
+            if not isinstance(tool_result, dict):
+                tool_result = _parse_tool_result(message.content)
             tool_results[message.tool_call_id] = tool_result
             if message.name:
                 tool_results_by_name[message.name].append(tool_result)
@@ -213,7 +211,7 @@ def _parse_tool_result(content):
 
 def _add_display_fields(result: dict) -> None:
     """Expose the last successful query result in the UI-friendly shape."""
-    result["sql"] = result["sql_queries"][-1] if result["sql_queries"] else None
+    # result["sql"] = result["sql_queries"][-1] if result["sql_queries"] else None
     result["data"] = None
     result["query_succeeded"] = False
     for item in reversed(result["tool_history"]):

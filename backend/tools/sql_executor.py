@@ -60,13 +60,28 @@ def execute_sql(query: str) -> dict:
         }
 
 
-@tool
-def execute_sql_query(query: str) -> str:
+@tool(response_format="content_and_artifact")
+def execute_sql_query(query: str) -> tuple[str, dict]:
     """Execute one validated, read-only MySQL SELECT query.
 
     The query is checked for unsafe operations and restricted to the logistics
-    tables before execution. Returns JSON rows or a safe error message.
+    tables before execution. Returns a compact summary to the LLM and keeps
+    complete rows as an internal artifact for the UI.
     """
-    # Returning JSON explicitly keeps the LangChain ToolMessage content
-    # machine-readable, allowing the Streamlit UI to show every returned row.
-    return json.dumps(execute_sql(query), default=str)
+    result = execute_sql(query)
+    if result.get("success"):
+        content = json.dumps({
+            "success": True,
+            "row_count": result["row_count"],
+            "message": (
+                "Query completed. Give a concise summary; the UI will display "
+                "the complete result rows."
+            ),
+        })
+    else:
+        content = json.dumps(result, default=str)
+
+    # LangChain includes only `content` in the next model request. `result`
+    # remains attached to the ToolMessage as an artifact for Streamlit, which
+    # prevents large result sets from exceeding the Groq token limit.
+    return content, result
