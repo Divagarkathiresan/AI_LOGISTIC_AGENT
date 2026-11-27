@@ -16,9 +16,7 @@ from backend.agent.sql_agent import run_sql_agent
 from backend.memory.conversation_memory import conversation_memory
 
 
-# --------------------------------------------------
 # PAGE CONFIGURATION
-# --------------------------------------------------
 
 st.set_page_config(
     page_title="Logistics SQL Agent",
@@ -64,9 +62,7 @@ def render_query_result(message: dict) -> None:
                 st.info("The query completed but returned no records.")
 
 
-# --------------------------------------------------
 # SESSION MANAGEMENT
-# --------------------------------------------------
 
 if "session_id" not in st.session_state:
     st.session_state.session_id = str(uuid.uuid4())
@@ -81,9 +77,7 @@ if "last_results" not in st.session_state:
     st.session_state.last_results = None
 
 
-# --------------------------------------------------
 # SIDEBAR
-# --------------------------------------------------
 
 with st.sidebar:
 
@@ -114,9 +108,9 @@ with st.sidebar:
     )
 
 
-# --------------------------------------------------
+
 # DISPLAY CHAT HISTORY
-# --------------------------------------------------
+
 
 for message in st.session_state.messages:
     render_message(message["role"], message["content"])
@@ -124,9 +118,9 @@ for message in st.session_state.messages:
         render_query_result(message)
 
 
-# --------------------------------------------------
+
 # PROCESS USER INPUT
-# --------------------------------------------------
+
 
 user_question = st.chat_input(
     "Ask something about orders, shipments or deliveries..."
